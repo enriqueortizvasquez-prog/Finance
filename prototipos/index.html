@@ -309,6 +309,11 @@ body[data-theme="obsidiana"] .btn{border-radius:26px 20px 26px 22px}
 </div>
 
 <script>
+window.addEventListener('error',e=>{const b=document.getElementById('errbox')||Object.assign(document.body.appendChild(document.createElement('pre')),{id:'errbox'});
+  b.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:99;background:#300;color:#fbb;padding:10px;border-radius:10px;font:12px monospace;white-space:pre-wrap';
+  b.textContent+='Error: '+e.message+' ('+(e.lineno||'')+')\n'});
+</script>
+<script>
 /* ================== CONFIG ================== */
 const THEMES = {
   obsidiana:{name:'Obsidiana Líquida',short:'Gotas de mercurio, violeta → cian',
@@ -349,6 +354,7 @@ const CATS = [
 const CAT = Object.fromEntries(CATS.map(c=>[c.id,c]));
 const DEFAULT_BUDGETS = {comida:900,transporte:300,casa:1200,servicios:300,salud:200,ocio:300,compras:400,educacion:200,otros:150};
 const KEY = 'finanzas-proto-v1';
+const store=(()=>{let mem={};try{const t='__t';localStorage.setItem(t,t);localStorage.removeItem(t);return localStorage}catch(e){return{getItem:k=>mem[k]??null,setItem:(k,v)=>{mem[k]=String(v)},removeItem:k=>{delete mem[k]}}}})();
 
 /* ================== UTILS ================== */
 const $ = (s,r=document)=>r.querySelector(s);
@@ -396,14 +402,14 @@ function seedData(){
   return txs;
 }
 function load(){
-  try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.txs))return s}catch(e){}
+  try{const s=JSON.parse(store.getItem(KEY));if(s&&Array.isArray(s.txs))return s}catch(e){}
   return {theme:'obsidiana',txs:seedData(),budgets:{...DEFAULT_BUDGETS}};
 }
 const saved=load();
 const now=new Date();
 const state={theme:saved.theme||'obsidiana',txs:saved.txs,budgets:saved.budgets||{...DEFAULT_BUDGETS},
   y:now.getFullYear(),m:now.getMonth(),tab:'home',filter:'all',q:''};
-function persist(){localStorage.setItem(KEY,JSON.stringify({theme:state.theme,txs:state.txs,budgets:state.budgets}))}
+function persist(){store.setItem(KEY,JSON.stringify({theme:state.theme,txs:state.txs,budgets:state.budgets}))}
 
 function monthData(){
   const list=state.txs.filter(t=>{const d=parseISO(t.date);return d.getFullYear()===state.y&&d.getMonth()===state.m})
