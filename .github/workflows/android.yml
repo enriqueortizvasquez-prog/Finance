@@ -20,15 +20,15 @@ jobs:
       run:
         working-directory: app
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: app/package-lock.json
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
@@ -50,6 +50,16 @@ jobs:
         run: |
           cp android/app/build/outputs/apk/release/app-release.apk Finanzas.apk
           ls -la Finanzas.apk
+
+      - name: Verificar APK (firma, permisos, servicio y widget)
+        run: |
+          BT=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
+          $BT/apksigner verify --print-certs Finanzas.apk | head -3
+          $BT/aapt2 dump badging Finanzas.apk | grep -E "^package|uses-permission|application-label|sdkVersion"
+          $BT/aapt2 dump xmltree Finanzas.apk --file AndroidManifest.xml > manifest.txt
+          grep -q "NotifListener" manifest.txt && grep -q "BIND_NOTIFICATION_LISTENER_SERVICE" manifest.txt && grep -q "SaldoWidget" manifest.txt && grep -q "USE_BIOMETRIC" manifest.txt
+          unzip -p Finanzas.apk assets/public/index.html | grep -q parseBankNotif
+          echo "APK verificado"
 
       - uses: actions/upload-artifact@v4
         with:
