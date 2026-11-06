@@ -1,0 +1,19 @@
+{
+  "appId": "pe.edward.finanzas",
+  "appName": "Finanzas",
+  "webDir": "www",
+  "backgroundColor": "#000000",
+  "android": {
+    "backgroundColor": "#000000",
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false,
+    "captureInput": false
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "style": "DARK",
+      "initialViewportFitValueHint": "cover"
+    }
+  }
+}

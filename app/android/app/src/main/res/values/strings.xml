@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Finanzas</string>
+    <string name="title_activity_main">Finanzas</string>
+    <string name="package_name">pe.edward.finanzas</string>
+    <string name="custom_url_scheme">pe.edward.finanzas</string>
+    <string name="widget_label">en tus cuentas</string>
+    <string name="widget_open">Abre Finanzas</string>
+    <string name="widget_sub">Toca para empezar</string>
+    <string name="widget_add">Registrar gasto</string>
+    <string name="widget_desc">Tu saldo y lo gastado este mes, con un botón para registrar.</string>
+    <string name="notif_service">Finanzas: anotar pagos de Yape y bancos</string>
+</resources>

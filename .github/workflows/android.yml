@@ -1,0 +1,68 @@
+name: App Android (APK)
+
+on:
+  push:
+    branches: [main, arena/75affaf6-finance]
+    paths: ['app/**', '.github/workflows/android.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Preparar la app web
+        run: |
+          npm ci
+          npm run build:web
+          npx cap sync android
+
+      - name: Compilar APK
+        working-directory: app/android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleRelease
+
+      - name: Nombrar APK
+        run: |
+          cp android/app/build/outputs/apk/release/app-release.apk Finanzas.apk
+          ls -la Finanzas.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Finanzas-apk
+          path: app/Finanzas.apk
+
+      - name: Publicar descarga
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "app-v1.0.${{ github.run_number }}" Finanzas.apk \
+            --repo "${{ github.repository }}" \
+            --target "${{ github.sha }}" \
+            --title "Finanzas 1.0.${{ github.run_number }}" \
+            --notes "Descarga Finanzas.apk en tu celular Android y ábrelo para instalar o actualizar. Tus datos se conservan." \
+            --latest

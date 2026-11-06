@@ -1,0 +1,21 @@
+/* ================= APP: pantalla completa en el celular ================= */
+@font-face{font-family:'Bricolage Grotesque';font-style:normal;font-weight:300;font-display:swap;src:url(fonts/bricolage-grotesque-latin-300-normal.woff2) format('woff2')}
+@font-face{font-family:'Bricolage Grotesque';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/bricolage-grotesque-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Bricolage Grotesque';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/bricolage-grotesque-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Bricolage Grotesque';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/bricolage-grotesque-latin-600-normal.woff2) format('woff2')}
+:root{--sat:var(--safe-area-inset-top,env(safe-area-inset-top,0px));--sab:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px))}
+html,body{height:100%;overscroll-behavior:none}
+body{background:var(--bg,#000)!important;display:block!important;min-height:100dvh;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea{-webkit-user-select:text;user-select:text}
+.studio,.notes{display:none!important}
+.stage{padding:0!important;display:block!important;max-width:none!important;gap:0!important}
+.phone{width:100vw!important;height:100dvh!important;border-radius:0!important;box-shadow:none!important}
+body[data-theme="mosaico"] .screen{padding-top:calc(26px + var(--sat));padding-bottom:calc(84px + var(--sab))}
+.sheet{padding-bottom:calc(30px + var(--sab))}
+.toast{top:calc(14px + var(--sat))}
+.jv-win{top:calc(10px + var(--sat))!important;bottom:calc(10px + var(--sab))!important}
+.story{padding-top:calc(40px + var(--sat));padding-bottom:calc(36px + var(--sab))}
+.story .x{top:calc(10px + var(--sat))}
+.onb{padding-top:calc(54px + var(--sat));padding-bottom:calc(28px + var(--sab))}
+.lock{padding-top:calc(40px + var(--sat));padding-bottom:calc(40px + var(--sab))}
+#errbox{display:none!important}
