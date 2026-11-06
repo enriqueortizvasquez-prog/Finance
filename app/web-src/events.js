@@ -112,10 +112,15 @@ document.addEventListener('click',e=>{
     case 'dorestore':{const b=backups()[restoreIx];if(!b)break;Object.assign(state,{txs:b.data.txs||[],cats:b.data.cats||state.cats,accs:b.data.accs||state.accs,budgets:b.data.budgets||{},recs:b.data.recs||[],goals:b.data.goals||[],debts:b.data.debts||[],accFilter:'all'});
       store.setItem(KEY,JSON.stringify(snapshot()));closeSheet();render(true);toast('Copia restaurada');break}
     case 'jarvis':openJarvis();break;
+    case 'lizivoz':openJarvis();voiceStart(true);break;
     case 'jvclose':closeJarvis();break;
     case 'jvsend':sendJarvis($('#jvInput').value);break;
     case 'mic':toggleMic();break;
-    case 'voz':state.user.voz=!state.user.voz;persist();el.classList.toggle('on',state.user.voz);if(state.user.voz)speak('Listo, ahora te respondo en voz alta.');break;
+    case 'votap':voiceTap();break;
+    case 'voend':voiceEnd('');break;
+    case 'vokeys':voiceEnd('');voiceView(false);setTimeout(()=>$('#jvInput')?.focus(),250);break;
+    case 'vozdir':state.user.vozDirecta=state.user.vozDirecta===false;persist();el.classList.toggle('on',state.user.vozDirecta);break;
+    case 'voz':state.user.voz=!state.user.voz;persist();el.classList.toggle('on',state.user.voz);if(state.user.voz)sayOnce('Listo, en el chat escrito también te respondo en voz alta.');break;
     case 'fabtoggle':state.user.fab=!state.user.fab;persist();el.classList.toggle('on',state.user.fab);placeFab();break;
     case 'fabreset':state.user.fabPos=null;state.user.fab=true;persist();render(true);toast('Burbuja en su lugar');break;
     case 'export':{if(NATIVE){FZ.saveFile({name:`finanzas-${iso(now)}.json`,data:JSON.stringify({app:'finanzas',v:8,...snapshot()},null,2)}).then(r=>toast(`Guardado en ${r.path}`)).catch(()=>toast('No pude guardar el archivo'));break}
@@ -137,7 +142,7 @@ document.addEventListener('input',e=>{
 document.addEventListener('change',e=>{
   const t=e.target;
   if(t.id==='setName'){state.user.name=t.value.trim()||'Edward';persist();const av=$('.me-card .av');if(av)av.textContent=state.user.name[0].toUpperCase()}
-  if(t.id==='setBot'){state.user.bot=t.value.trim()||'Jarvis';persist();renderStudio()}
+  if(t.id==='setBot'){state.user.bot=t.value.trim()||'Lizi';persist();renderStudio()}
   if(t.id==='importFile'&&t.files[0]){const r=new FileReader();r.onload=()=>{try{const s=JSON.parse(r.result);if(!Array.isArray(s.txs))throw 0;
     Object.assign(state,{txs:s.txs,cats:s.cats||state.cats,accs:s.accs||state.accs,budgets:s.budgets||state.budgets,recs:s.recs||[],goals:s.goals||[],debts:s.debts||[]});if(s.user)Object.assign(state.user,s.user);if(THEMES[s.theme])state.theme=s.theme;
     persist();render();toast('Respaldo importado')}catch(_){toast('Ese archivo no es un respaldo válido')}};r.readAsText(t.files[0]);t.value=''}

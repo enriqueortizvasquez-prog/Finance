@@ -97,7 +97,7 @@ if(NATIVE){
   /* si el WebView perdió los datos pero existe la copia nativa, se recupera sola */
   if(firstRun)FZ.kvGet({key:'data'}).then(r=>{if(r&&r.value){store.setItem(KEY,r.value);location.reload()}}).catch(()=>{});
   CAPAPP.addListener('backButton',onBack);
-  CAPAPP.addListener('pause',()=>{pausedAt=Date.now()});
+  CAPAPP.addListener('pause',()=>{pausedAt=Date.now();if(VO.on)voiceEnd('')});
   CAPAPP.addListener('resume',()=>{
     const day=iso(now);now=new Date();
     if(iso(now)!==day){applyRecs();autoBackup()}
@@ -107,6 +107,7 @@ if(NATIVE){
   });
   FZ.addListener('notif',()=>pullNotifs());
   FZ.addListener('action',()=>takeAction());
+  FZ.addListener('voice',e=>voEvent(e));
   checkPerms().then(()=>{if(state.user.pin&&state.user.bio&&$('#lock').classList.contains('open'))showLock()});
   pullNotifs();takeAction();nativeSync();
 }

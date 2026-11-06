@@ -202,22 +202,26 @@ function showTip(text){
     if(!drag&&Math.hypot(dx,dy)>6){drag=true;f.classList.add('drag');$('#jvTip').classList.remove('show')}
     if(drag){f.style.left=(ox+dx)+'px';f.style.top=(oy+dy)+'px'}});
   const up=()=>{if(!down)return;down=false;f.classList.remove('drag');
-    if(!drag){openJarvis();return}
+    if(!drag){openLizi();return}
     const W=$('#phone').clientWidth;state.user.fabPos={side:f.offsetLeft+FAB/2<W/2?'l':'r',y:f.offsetTop};persist();placeFab()};
   f.addEventListener('pointerup',up);f.addEventListener('pointercancel',up);
-  f.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')openJarvis()});f.tabIndex=0;
+  f.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')openLizi()});f.tabIndex=0;
 })();
+function openLizi(){openJarvis();if(state.user.vozDirecta!==false)voiceStart(true)}
 function openJarvis(){
   const u=state.user,w=$('#jvWin');clearTimeout(tipT);$('#jvTip').classList.remove('show');
   if(!state.chat.length)state.chat.push({from:'bot',text:`${greeting()}, ${u.name}. Soy ${u.bot}.\n${insights()[0]}\n¿Qué hacemos?`});
   const {x,y}=fabXY();w.style.transformOrigin=`${x+FAB/2-10}px ${y+FAB/2-46}px`;
   w.innerHTML=`<div class="jv-head"><div class="orb" id="jvOrb"></div><div><b>${esc(u.bot)}</b><small>Todo queda en tu celular</small></div><button class="x" data-act="jvclose" aria-label="Minimizar">${svg('minus',16,2.2)}</button></div>
+    <div class="jv-voice" id="jvVoice"><button class="vo-orb" id="voOrb" data-act="votap" aria-label="Hablar"><i></i><i></i><span></span></button>
+      <div class="vo-state" id="voState">Toca el círculo para hablar</div><div class="vo-heard" id="voHeard"></div><div class="vo-reply" id="voReply"></div>
+      <div class="vo-acts"><button data-act="vokeys" aria-label="Escribir">${svg('keys',20,1.8)}<span>Escribir</span></button><button data-act="voend" aria-label="Terminar">${svg('close',20,2)}<span>Terminar</span></button></div></div>
     <div class="msgs" id="msgs"></div>
     <div class="sugg">${SUGG.map(t=>`<button data-sugg="${esc(t)}">${esc(t)}</button>`).join('')}</div>
-    <div class="jv-input"><input id="jvInput" placeholder="Escríbele a ${esc(u.bot)}…" autocomplete="off"><button class="mic" id="jvMic" data-act="mic" aria-label="Hablar">${svg('mic',20,2)}</button><button class="send" data-act="jvsend" aria-label="Enviar">${svg('send',20,2.2)}</button></div>`;
+    <div class="jv-input"><input id="jvInput" placeholder="Escríbele a ${esc(u.bot)}…" autocomplete="off"><button class="mic" id="jvMic" data-act="mic" aria-label="Hablar por voz">${svg('mic',20,2)}</button><button class="send" data-act="jvsend" aria-label="Enviar">${svg('send',20,2.2)}</button></div>`;
   state.chatOpen=true;w.offsetWidth;w.classList.add('open');$('#jvDim').classList.add('open');placeFab();drawMsgs();
 }
-function closeJarvis(){state.chatOpen=false;$('#jvWin').classList.remove('open');$('#jvDim').classList.remove('open');if(rec){try{rec.stop()}catch(e){}}placeFab()}
+function closeJarvis(){state.chatOpen=false;$('#jvWin').classList.remove('open');$('#jvDim').classList.remove('open');if(VO.on||VO.phase!=='idle')voiceEnd('');$('#jvWin').classList.remove('voice');placeFab()}
 function drawMsgs(typing){
   const box=$('#msgs');if(!box)return;
   box.innerHTML=state.chat.map(m=>`<div class="msg ${m.from}">${esc(m.text)}${m.undo&&state.txs.find(t=>t.id===m.undo)?`<br><button class="undo" data-undo="${m.undo}">${svg('undo',13,2)}Deshacer</button>`:''}</div>`).join('')+(typing?'<div class="msg bot typing"><i></i><i></i><i></i></div>':'');
@@ -231,25 +235,90 @@ function sendJarvis(text){
   setTimeout(()=>{const r=jarvisReply(text);state.chat.push({from:'bot',...r});drawMsgs();$('#jvOrb')?.classList.remove('busy');speak(r.text)},550);
 }
 function undoTx(id,silent){state.txs=state.txs.filter(t=>t.id!==id);persist();render(true);if(!silent){state.chat.push({from:'bot',text:'Hecho, lo borré.'});drawMsgs()}}
-function speak(t){
-  if(!state.user.voz)return;
-  const txt0=t.replace(/S\/\s?(-?[\d,]+)\.(\d{2})/g,(_,a,b)=>`${a.replace(/,/g,'')}${b!=='00'?' con '+b:''} soles`).replace(/[·“”]/g,' ').replace(/\n/g,'. ');
-  if(NATIVE){FZ.speak({text:txt0}).catch(()=>{});return}
-  if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const txt=txt0;
-  const u=new SpeechSynthesisUtterance(txt);u.lang='es-PE';
-  const v=speechSynthesis.getVoices().find(v=>/es[-_](PE|US|MX|419)/i.test(v.lang))||speechSynthesis.getVoices().find(v=>/^es/i.test(v.lang));if(v)u.voice=v;
-  u.rate=1.04;speechSynthesis.speak(u);
+/* ================= VOZ: conversación directa con Lizi =================
+   Tocas la burbuja → Lizi escucha → responde hablando → vuelve a escuchar sola.
+   Termina si dices "gracias / chau / eso es todo", si no escucha nada dos veces, o al tocar ✕. */
+function spoken(t){
+  return String(t).replace(/S\/\s?(-?[\d,]+)\.(\d{2})/g,(_,a,b)=>`${a.replace(/,/g,'')}${b!=='00'?' con '+b:''} soles`)
+    .replace(/US\$\s?([\d,]+)(?:\.(\d{2}))?/g,(_,a,b)=>`${a.replace(/,/g,'')}${b&&b!=='00'?' con '+b:''} dólares`)
+    .replace(/S\/\s?••••/g,'un monto oculto').replace(/[·“”•]/g,' ').replace(/\s*\n+\s*/g,'. ').replace(/\.\s*\./g,'.').replace(/(\d)\s?%/g,'$1 por ciento').replace(/[−-](?=\d)/g,'menos ').replace(/:\s*\./g,'.').replace(/\s{2,}/g,' ');
 }
+let webUtt=null;
+function sayOnce(t){
+  const txt=spoken(t);
+  if(NATIVE)return FZ.speak({text:txt,wait:true}).catch(()=>{});
+  if(!('speechSynthesis' in window))return Promise.resolve();
+  return new Promise(res=>{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(txt);u.lang='es-PE';
+    const vs=speechSynthesis.getVoices(),v=vs.find(v=>/es[-_](US|MX|PE|419)/i.test(v.lang))||vs.find(v=>/^es/i.test(v.lang));if(v)u.voice=v;
+    u.rate=1.04;u.onend=u.onerror=()=>res();webUtt=u;speechSynthesis.speak(u);setTimeout(res,Math.max(4000,txt.length*95))});
+}
+function stopSay(){if(NATIVE)FZ.stopSpeak().catch(()=>{});else if('speechSynthesis' in window)speechSynthesis.cancel()}
+/* respuesta hablada en el chat escrito (opción "responder también en voz") */
+function speak(t){if(!state.user.voz||VO.on)return;sayOnce(t)}
 let rec=null;
-function toggleMic(){
-  if(NATIVE){$('#jvOrb')?.classList.add('busy');FZ.listen().then(r=>{$('#jvOrb')?.classList.remove('busy');if(r&&r.text)sendJarvis(r.text)}).catch(()=>{$('#jvOrb')?.classList.remove('busy');toast('No pude abrir el dictado')});return}
+function listenOnce(){
+  if(NATIVE)return FZ.voiceListen().then(r=>r||{text:''}).catch(e=>({text:'',error:'fail'}));
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){toast('Este navegador no permite dictado. En la app sí funcionará.');return}
-  if(rec){rec.stop();return}
-  rec=new SR();rec.lang='es-PE';rec.interimResults=true;
-  const btn=$('#jvMic'),inp=$('#jvInput');btn.classList.add('on');$('#jvOrb')?.classList.add('busy');inp.placeholder='Te escucho…';
-  rec.onresult=e=>{inp.value=[...e.results].map(r=>r[0].transcript).join('')};
-  rec.onerror=()=>toast('No te escuché bien, intenta de nuevo');
-  rec.onend=()=>{btn?.classList.remove('on');$('#jvOrb')?.classList.remove('busy');rec=null;if(inp){inp.placeholder=`Escríbele a ${state.user.bot}…`;if(inp.value.trim())sendJarvis(inp.value)}};
-  try{rec.start()}catch(e){rec=null;toast('No pude activar el micrófono')}
+  if(!SR)return Promise.resolve({text:'',error:'unavailable'});
+  return new Promise(res=>{let txt='',done=false;const fin=x=>{if(done)return;done=true;rec=null;res(x)};
+    rec=new SR();rec.lang='es-PE';rec.interimResults=true;
+    rec.onstart=()=>voEvent({type:'ready'});
+    rec.onresult=e=>{txt=[...e.results].map(r=>r[0].transcript).join('');voEvent({type:'partial',text:txt})};
+    rec.onerror=e=>fin({text:'',error:e.error==='not-allowed'?'perm':e.error==='no-speech'?'silence':'fail'});
+    rec.onend=()=>fin({text:txt});
+    try{rec.start()}catch(e){fin({text:'',error:'fail'})}});
 }
+function stopListen(){if(NATIVE)FZ.voiceStop().catch(()=>{});else if(rec){try{rec.abort()}catch(e){}}}
+function finishListen(){if(NATIVE)FZ.voiceFinish().catch(()=>{});else if(rec){try{rec.stop()}catch(e){}}}
+
+const VO={on:false,phase:'idle',heard:'',reply:'',fails:0,errs:0,run:0};
+const BYE=/^(gracias|muchas gracias|chau|chao|adios|hasta luego|eso es todo|eso seria todo|nada mas|ya esta|listo gracias|ok gracias|ya gracias|bye)\b/;
+function voPhase(p){VO.phase=p;const w=$('#jvWin');if(!w)return;w.dataset.vo=p;
+  const st=$('#voState');if(st)st.textContent={listen:'Te escucho…',think:'Pensando…',speak:`${state.user.bot} está hablando`,idle:'Toca el círculo para hablar'}[p]||'';
+  const hd=$('#voHeard');if(hd){hd.textContent=VO.heard;hd.classList.toggle('show',!!VO.heard)}
+  const rp=$('#voReply');if(rp){rp.textContent=VO.reply;rp.classList.toggle('show',!!VO.reply)}
+  if(p!=='listen')$('#voOrb')?.style.setProperty('--lv',0);
+}
+function voEvent(e){
+  if(!VO.on||!e)return;
+  if(e.type==='partial'&&VO.phase==='listen'){VO.heard=e.text||'';const hd=$('#voHeard');if(hd){hd.textContent=VO.heard;hd.classList.toggle('show',!!VO.heard)}}
+  if(e.type==='level'&&VO.phase==='listen'){const v=Math.max(0,Math.min(1,((+e.v||0)+2)/12));$('#voOrb')?.style.setProperty('--lv',v.toFixed(2))}
+}
+function voiceView(on){const w=$('#jvWin');if(!w)return;w.classList.toggle('voice',on);if(!on)drawMsgs()}
+async function voiceStart(greet){
+  if(!state.chatOpen)openJarvis();
+  voiceView(true);if(VO.on)return;
+  VO.on=true;VO.fails=0;VO.errs=0;VO.heard='';VO.reply='';const run=++VO.run;
+  if(greet){const g=[`Dime, ${state.user.name}.`,'Te escucho.',`Hola, ${state.user.name}. ¿Qué hacemos?`][Math.floor(Math.random()*3)];VO.reply=g;voPhase('speak');await sayOnce(g);if(VO.run!==run)return}
+  while(VO.on&&VO.run===run){
+    VO.heard='';voPhase('listen');
+    const r=await listenOnce();if(!VO.on||VO.run!==run)break;
+    const text=String(r.text||'').trim();
+    if(r.error==='perm'){voiceEnd('Para hablar conmigo necesito permiso del micrófono. Tócame otra vez y elige Permitir.');break}
+    if(r.error==='unavailable'){voiceEnd('Este celular no tiene reconocimiento de voz. Puedes escribirme.');voiceView(false);break}
+    if(!text&&r.error&&r.error!=='silence'){
+      if(++VO.errs>=4){voiceEnd(r.error==='network'?'No pude entenderte: el reconocimiento de voz necesita internet o el paquete de español sin conexión.':'No logro escucharte bien ahora. Tócame para intentar otra vez.');break}
+      await new Promise(z=>setTimeout(z,350));continue}
+    if(!text){if(++VO.fails>=2){voiceEnd('');break}continue}
+    VO.errs=0;
+    VO.fails=0;VO.heard=text;voPhase('think');
+    state.chat.push({from:'me',text});
+    const bye=BYE.test(norm(text))&&!/\d/.test(text);
+    const rep=bye?{text:`Para eso estoy, ${state.user.name}. Aquí estaré.`}:jarvisReply(text);
+    state.chat.push({from:'bot',...rep});drawMsgs();
+    VO.reply=rep.text;voPhase('speak');await sayOnce(rep.text);
+    if(bye){voiceEnd('');break}
+  }
+}
+function voiceEnd(msg){
+  VO.run++;VO.on=false;stopListen();stopSay();
+  if(msg){VO.reply=msg;VO.heard=''}
+  voPhase('idle');
+}
+/* tocar el círculo: si habla → la interrumpes y te escucha; si escucha → envía ya; si está quieta → empieza */
+function voiceTap(){
+  if(!VO.on){voiceStart(false);return}
+  if(VO.phase==='speak'){const run=++VO.run;VO.on=false;stopSay();setTimeout(()=>{if(VO.run===run)voiceStart(false)},180);return}
+  if(VO.phase==='listen')finishListen();
+}
+function toggleMic(){voiceStart(false)}

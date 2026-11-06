@@ -36,6 +36,7 @@ const ICONS={
   calendar:'<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
   history:'<path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1M3.5 4v4.5H8"/><path d="M12 8v4.5l3 2"/>',
   chart:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>',
+  keys:'<rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6.5 10h.01M10 10h.01M13.5 10h.01M17 10h.01M8 14h8"/>',
 };
 const svg=(n,s=20,sw=1.7)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${ICONS[n]||''}</svg>`;
 
@@ -177,8 +178,9 @@ const saved=load(),firstRun=!saved.txs;let now=new Date();const EX=seedExtras();
 const state={theme:THEMES[saved.theme]?saved.theme:'carbon',txs:saved.txs||seedData(),
   cats:saved.cats||DEFAULT_CATS.map(c=>({...c})),accs:saved.accs||DEFAULT_ACCS.map(a=>({...a})),budgets:saved.budgets||{...DEFAULT_BUDGETS},
   recs:saved.recs||EX.recs,goals:saved.goals||EX.goals,debts:saved.debts||EX.debts,
-  user:Object.assign({name:'Edward',bot:'Jarvis',voz:false,fab:true,fabPos:null,lastAcc:{gasto:'yape',ingreso:'bcp'},hide:false,pin:null,rate:3.4,lastSeen:null,onboarded:!firstRun},saved.user||{}),
+  user:Object.assign({name:'Edward',bot:'Lizi',voz:false,vozDirecta:true,fab:true,fabPos:null,lastAcc:{gasto:'yape',ingreso:'bcp'},hide:false,pin:null,rate:3.4,lastSeen:null,onboarded:!firstRun},saved.user||{}),
   y:now.getFullYear(),m:now.getMonth(),tab:'home',filter:'all',accFilter:'all',q:'',catTab:'gasto',chat:[],chatOpen:false};
+if(state.user.bot==='Jarvis')state.user.bot='Lizi';
 const snapshot=()=>({theme:state.theme,txs:state.txs,cats:state.cats,accs:state.accs,budgets:state.budgets,recs:state.recs,goals:state.goals,debts:state.debts,user:state.user});
 function persist(){store.setItem(KEY,JSON.stringify(snapshot()));autoBackup();if(NATIVE)nativeSync()}
 /* copia automática diaria dentro del mismo celular (se guardan las últimas 7) */

@@ -119,7 +119,7 @@ function viewMenu(){
   ${row('data-go="debts"','users','Deudas y préstamos',(()=>{const t=debtTotals();return t.open.length?`Te deben ${money(t.me)} · debes ${money(t.yo)}`:'Todo saldado'})())}
   ${row('data-act="story"','chart','Resumen del mes',`Tu ${MONTHS[(now.getMonth()+11)%12].toLowerCase()} en números`)}
   <div class="h"><span>Asistente y apariencia</span></div>
-  ${row('data-go="assistant"','spark',esc(u.bot),`Burbuja flotante ${u.fab?'activada':'oculta'}${u.voz?' · responde en voz alta':''}`)}
+  ${row('data-go="assistant"','spark',esc(u.bot),`${u.vozDirecta!==false?'Conversa por voz':'Chat escrito'} · burbuja ${u.fab?'activada':'oculta'}`)}
   ${row('data-go="look"','brush','Apariencia',`Paleta ${THEMES[state.theme].name}`)}
   <button class="srow" data-act="hide"><span class="ic">${svg(u.hide?'eyeOff':'eye',18)}</span><div class="t">Ocultar montos<small>Para revisar la app en público</small></div><span class="switch ${u.hide?'on':''}"></span></button>
   ${row('data-act="rate"','dollar','Tipo de cambio',`US$ 1 = S/ ${u.rate.toFixed(2)} · lo pones tú`)}
@@ -161,13 +161,14 @@ function viewLook(){
 }
 function viewAssistant(){
   const u=state.user;
-  return `${pageHead('assistant')}<h1 class="title">${esc(u.bot)}</h1><p class="sub">Tu asistente vive en una burbuja flotante. Arrástrala a cualquier lado; tócala para hablarle.</p>
+  return `${pageHead('assistant')}<h1 class="title">${esc(u.bot)}</h1><p class="sub">Tu asistente vive en una burbuja flotante. Arrástrala a cualquier lado; tócala y háblale como a una persona.</p>
   <div style="margin-top:14px">
   <label class="srow"><div class="t">Nombre del asistente</div><input id="setBot" value="${esc(u.bot)}" maxlength="16"></label>
   <div class="srow"><div class="t">Mostrar burbuja flotante<small>Si la ocultas, igual puedes abrirlo desde aquí</small></div><button class="switch ${u.fab?'on':''}" data-act="fabtoggle" aria-label="Burbuja"></button></div>
-  <div class="srow"><div class="t">Responder en voz alta</div><button class="switch ${u.voz?'on':''}" data-act="voz" aria-label="Voz"></button></div>
+  <div class="srow"><div class="t">Conversar por voz al tocar la burbuja<small>Te escucha y te responde hablando, sin escribir</small></div><button class="switch ${u.vozDirecta!==false?'on':''}" data-act="vozdir" aria-label="Conversar por voz"></button></div>
+  <div class="srow"><div class="t">En el chat escrito, responder también en voz</div><button class="switch ${u.voz?'on':''}" data-act="voz" aria-label="Voz"></button></div>
   <button class="srow" data-act="fabreset"><div class="t">Devolver la burbuja a su lugar</div><span class="chev">${svg('chevR',16)}</span></button>
-  <button class="srow" data-act="jarvis"><div class="t">Abrir chat ahora</div><span class="chev">${svg('chevR',16)}</span></button></div>`;
+  <button class="srow" data-act="lizivoz"><div class="t">Hablar con ${esc(u.bot)} ahora</div><span class="chev">${svg('chevR',16)}</span></button></div>`;
 }
 const phoneW=()=>$('#phone').clientWidth||390;
 
