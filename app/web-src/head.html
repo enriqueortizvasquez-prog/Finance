@@ -164,16 +164,16 @@ body[data-theme="mosaico"] .hair{background:var(--faint)}
 .tile.w2{grid-column:span 2}
 .tile h3{font-size:13px;font-weight:400;color:var(--muted);display:flex;justify-content:space-between;align-items:center;letter-spacing:.01em}
 .tile h3 svg{opacity:.45}
-.tile .tv{font-size:24px;font-weight:500;letter-spacing:-.03em;line-height:1.05}
+.tile .tv{font-size:24px;font-weight:500;letter-spacing:0;line-height:1.05}
 .tile .tv small{display:block;font-size:12px;color:var(--muted);font-weight:400;letter-spacing:0;margin-top:5px}
 .t-saldo{min-height:232px}
 .t-saldo::before,.t-saldo::after{content:'';position:absolute;border-radius:50%;filter:blur(46px);z-index:-1}
 .t-saldo::before{width:240px;height:210px;left:-70px;top:-80px;background:var(--glow1);opacity:.55;animation:drift 16s ease-in-out infinite alternate}
 .t-saldo::after{width:200px;height:180px;right:-70px;bottom:-90px;background:var(--glow2);opacity:.7;animation:drift 19s ease-in-out infinite alternate-reverse}
 @keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(36px,26px) scale(1.12)}}
-.t-saldo .big2{font-size:58px;font-weight:400;letter-spacing:-.055em;line-height:1;white-space:nowrap}
+.t-saldo .big2{font-size:54px;font-weight:400;letter-spacing:.005em;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums}
 .t-saldo .big2 .cur{font-size:18px;color:var(--muted);vertical-align:top;margin-right:5px;letter-spacing:0;position:relative;top:8px}
-.t-saldo .big2 .dec{font-size:26px;color:var(--muted)}
+.t-saldo .big2 .dec{font-size:24px;color:var(--muted);letter-spacing:.02em;margin-left:1px}
 .t-saldo .sub2{font-size:13px;color:var(--muted);margin-top:12px}
 .t-add{background:color-mix(in srgb,var(--accent) 16%,var(--tile))}
 .t-add .plus{width:52px;height:52px;border-radius:50%;background:var(--accent);color:var(--bg);display:grid;place-items:center;animation:morph 9s ease-in-out infinite}
@@ -280,7 +280,7 @@ body[data-theme="mosaico"] .jv-fab .ring{border-color:color-mix(in srgb,var(--ac
 .seg button.on[data-type="gasto"]::after{background:var(--exp)} .seg button.on[data-type="ingreso"]::after{background:var(--inc)}
 .amount{display:flex;align-items:baseline;justify-content:center;gap:8px;margin:28px 0 8px}
 .amount span{font-family:var(--num);font-size:22px;color:var(--muted)}
-.amount input{font-family:var(--num);font-weight:var(--num-w);font-size:54px;width:210px;letter-spacing:-.04em}
+.amount input{font-family:var(--num);font-weight:var(--num-w);font-size:52px;width:230px;letter-spacing:0}
 .amount input::placeholder{color:var(--faint)}
 .quick{display:flex;justify-content:center;gap:16px;margin-bottom:8px}
 .quick button{font-size:13px;color:var(--muted)}
@@ -318,7 +318,7 @@ body[data-theme="mosaico"] .jv-fab .ring{border-color:color-mix(in srgb,var(--ac
 /* bloques de página */
 .blk{background:var(--tile);border-radius:28px;padding:22px;margin-top:12px;text-align:left;width:100%;display:block}
 .blk h4{font-size:13px;font-weight:400;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
-.blk .num{font-size:34px;font-weight:400;letter-spacing:-.04em;margin-top:10px;white-space:nowrap}
+.blk .num{font-size:34px;font-weight:400;letter-spacing:0;margin-top:10px;white-space:nowrap}
 .blk .num small{font-size:14px;color:var(--muted);letter-spacing:0;margin-left:6px}
 .blk .bar{margin-top:16px}
 .blk .kv{display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);margin-top:12px}
@@ -359,7 +359,7 @@ body[data-theme="mosaico"] .jv-fab .ring{border-color:color-mix(in srgb,var(--ac
 .dots.bad{animation:shake .4s}
 @keyframes shake{25%{transform:translateX(-10px)}50%{transform:translateX(9px)}75%{transform:translateX(-5px)}}
 .pad{display:grid;grid-template-columns:repeat(3,72px);gap:16px 26px}
-.pad button{width:72px;height:72px;border-radius:50%;background:var(--tile);font-size:26px;font-weight:400;color:var(--text)}
+.pad button{width:72px;height:72px;border-radius:50%;background:var(--tile);font-size:26px;font-weight:400;color:var(--text);display:flex;align-items:center;justify-content:center;text-align:center;padding:0;line-height:1;font-variant-numeric:tabular-nums}
 .pad button.nob{background:none;font-size:13px;color:var(--muted)}
 .sheet .dots{justify-content:center;margin:24px 0 26px}
 .sheet .pad{margin:0 auto 6px;justify-content:center}

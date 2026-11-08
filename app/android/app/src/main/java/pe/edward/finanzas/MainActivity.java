@@ -10,6 +10,8 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(FinanzasPlugin.class);
         super.onCreate(savedInstanceState);
+        // El diseño tiene medidas exactas: si Android agranda la letra del sistema, los números se salen de los círculos.
+        try { getBridge().getWebView().getSettings().setTextZoom(100); } catch (Exception ignored) {}
         handleAction(getIntent());
     }
 
